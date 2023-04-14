@@ -1,0 +1,42 @@
+{
+	"dash": {
+		"add": "Add",
+		"add-document": "Add Document",
+		"app-secret": "App Secret",
+		"click-to-copy": "Click to copy",
+		"copied": "Copied!",
+		"create": "Create",
+		"create-token": "Create Token",
+		"created-on": "Created on {time}",
+		"doc-max-characters": "1 ~ 16,000 characters",
+		"document-content": "Document Content",
+		"document-created": "Document created with ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a>",
+		"expiration": "Expiration",
+		"list": "List",
+		"list-all-document-keys": "List All Document Keys",
+		"read": "Read",
+		"remove": "Remove",
+		"search": "Search",
+		"search-for-documents": "Search for documents",
+		"write": "Write"
+	},
+	"error": {
+		"invalid-token": "Invalid token",
+		"missing-app-secret": "Missing APP_SECRET",
+		"missing-kv": "Missing KV",
+		"missing-query-parameter": "Missing query parameter: {name}",
+		"not-found": "Not found",
+		"read-permission-required": "read permission required",
+		"unauthorized": "Unauthorized",
+		"write-permission-required": "write permission required"
+	},
+	"goto-github": "Visit the GitHub Repository",
+	"login": {
+		"enter-app-secret": "Enter App Secret",
+		"login": "Login",
+		"login-into-kvec": "Login into KVec"
+	},
+	"manage-your-kvec": "Manage your KVec",
+	"welcome": "Welcome to KVec",
+	"with-tech": "Cloudflare KV with OpenAI Text Embedding and Pinecone Vector Database!"
+}

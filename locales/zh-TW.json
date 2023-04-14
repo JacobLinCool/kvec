@@ -1,0 +1,42 @@
+{
+	"dash": {
+		"add": "新增",
+		"add-document": "新增文件",
+		"app-secret": "App Secret",
+		"click-to-copy": "點擊複製",
+		"copied": "已複製！",
+		"create": "建立",
+		"create-token": "建立權杖",
+		"created-on": "於 {time} 建立",
+		"doc-max-characters": "1 ~ 16,000 個字元",
+		"document-content": "文件內容",
+		"document-created": "文件 ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> 建立成功",
+		"expiration": "到期日",
+		"list": "列出",
+		"list-all-document-keys": "列出所有文件 ID",
+		"read": "讀取",
+		"remove": "刪除",
+		"search": "搜尋",
+		"search-for-documents": "搜尋文件",
+		"write": "寫入"
+	},
+	"error": {
+		"invalid-token": "無效授權",
+		"missing-app-secret": "缺少 APP_SECRET",
+		"missing-kv": "缺少 KV",
+		"missing-query-parameter": "缺少查詢參數：{name}",
+		"not-found": "找不到",
+		"read-permission-required": "需要讀取權限",
+		"unauthorized": "未授權",
+		"write-permission-required": "需要寫入權限"
+	},
+	"goto-github": "前往 GitHub 專案",
+	"login": {
+		"enter-app-secret": "輸入 App Secret",
+		"login": "登入",
+		"login-into-kvec": "登入 KVec"
+	},
+	"manage-your-kvec": "管理你的 KVec",
+	"welcome": "歡迎使用 KVec",
+	"with-tech": "Cloudflare KV 搭配 OpenAI 詞語嵌入與 Pinecone 向量資料庫！"
+}
