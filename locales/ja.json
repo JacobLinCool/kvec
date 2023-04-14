@@ -1,0 +1,49 @@
+{
+	"dash": {
+		"add": "追加",
+		"add-document": "ドキュメントを追加",
+		"app-secret": "アプリの秘密",
+		"click-to-copy": "クリックしてコピー",
+		"copied": "コピーしました！",
+		"create": "作成",
+		"create-token": "トークンを作成",
+		"created-on": "{time} に作成",
+		"doc-max-characters": "1 ~ 16,000 文字",
+		"document-content": "ドキュメントの内容",
+		"document-created": "ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> で作成されたドキュメント",
+		"expiration": "有効期限",
+		"list": "リスト",
+		"list-all-document-keys": "すべてのドキュメント キーの一覧表示",
+		"read": "読む",
+		"remove": "削除",
+		"search": "検索",
+		"search-for-documents": "ドキュメントを検索",
+		"write": "書く"
+	},
+	"error": {
+		"invalid-token": "無効なトークン",
+		"missing-app-secret": "APP_SECRET がありません",
+		"missing-kv": "KV がありません",
+		"missing-query-parameter": "クエリ パラメータがありません: {name}",
+		"not-found": "見つかりません",
+		"read-permission-required": "読み取り許可が必要です",
+		"unauthorized": "無許可",
+		"write-permission-required": "書き込み許可が必要"
+	},
+	"goto-github": "GitHub リポジトリにアクセスする",
+	"lang": {
+		"en": "English",
+		"zh-TW": "正體中文",
+		"zh-CN": "简体中文",
+		"ja": "日本語"
+	},
+	"language": "言語",
+	"login": {
+		"enter-app-secret": "アプリのシークレットを入力してください",
+		"login": "ログイン",
+		"login-into-kvec": "KVecにログイン"
+	},
+	"manage-your-kvec": "KVec を管理する",
+	"welcome": "KVecへようこそ",
+	"with-tech": "OpenAI テキスト埋め込みと松ぼっくりベクター データベースを備えた Cloudflare KV!"
+}

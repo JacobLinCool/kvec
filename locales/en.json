@@ -31,6 +31,13 @@
 		"write-permission-required": "write permission required"
 	},
 	"goto-github": "Visit the GitHub Repository",
+	"lang": {
+		"en": "English",
+		"zh-TW": "正體中文",
+		"zh-CN": "简体中文",
+		"ja": "日本語"
+	},
+	"language": "Language",
 	"login": {
 		"enter-app-secret": "Enter App Secret",
 		"login": "Login",

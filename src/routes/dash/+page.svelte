@@ -3,6 +3,7 @@
 	import Icon from "@iconify/svelte";
 	import { onMount } from "svelte";
 	import CreateToken from "./CreateToken.svelte";
+	import Language from "$lib/component/Language.svelte";
 	import { t } from "svelte-i18n";
 
 	let token: string | null = null;
@@ -253,7 +254,7 @@
 						</thead>
 						<tbody>
 							{#each keys as key, i (key)}
-								<tr>
+								<tr class="hover">
 									<th>{i + 1}</th>
 									<td>
 										<a
@@ -280,6 +281,8 @@
 		</div>
 
 		<CreateToken />
+
+		<Language />
 
 		<div class="p-2" />
 	</div>

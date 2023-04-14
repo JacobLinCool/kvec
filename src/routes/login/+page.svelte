@@ -2,6 +2,7 @@
 	import Icon from "@iconify/svelte";
 	import { goto } from "$app/navigation";
 	import { t } from "svelte-i18n";
+	import Language from "$lib/component/Language.svelte";
 
 	let secret = "";
 	let running = false;
@@ -47,7 +48,7 @@
 </svelte:head>
 
 <div class="w-hull flex h-full flex-col items-center justify-center">
-	<div class="w-full max-w-md">
+	<div class="w-full max-w-md p-4">
 		<h1 class="mb-2 text-2xl font-bold text-base-content">{$t("login.login-into-kvec")}</h1>
 		<div class="form-control w-full">
 			<div class="input-group">
@@ -73,5 +74,9 @@
 				{error}
 			</div>
 		{/if}
+
+		<div class="mt-4">
+			<Language />
+		</div>
 	</div>
 </div>
