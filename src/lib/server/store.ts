@@ -3,25 +3,26 @@ import { embed } from "./openai";
 import { upsert, remove, query } from "./pinecone";
 import { dev } from "$app/environment";
 
-const DocSchema = z.object({
+export const DocSchema = z.object({
 	id: z.string(),
 	content: z.string(),
+	metadata: z.record(z.string(), z.any()),
 	on: z.number(),
 });
 
-const DEV_STORE = new Map<string, { id: string; content: string; on: number }>();
+const DEV_STORE = new Map<string, z.infer<typeof DocSchema>>();
 
 export async function put(
 	id: string,
-	content: string,
+	doc: { content: string; metadata: Record<string, unknown> },
 	platform?: Readonly<App.Platform>,
 ): Promise<void> {
 	if (dev || !platform) {
-		DEV_STORE.set(id, { id, content, on: Date.now() });
+		DEV_STORE.set(id, { id, content: doc.content, metadata: doc.metadata, on: Date.now() });
 		return;
 	}
 
-	const [embedding] = await embed([content]);
+	const [embedding] = await embed([doc.content]);
 
 	await upsert([{ id, values: embedding }]);
 
@@ -30,23 +31,20 @@ export async function put(
 		key,
 		JSON.stringify({
 			id,
-			content: content,
+			content: doc.content,
+			metadata: doc.metadata,
 			on: Date.now(),
 		}),
+		{
+			metadata: doc.metadata,
+		},
 	);
 }
 
 export async function get(
 	id: string,
 	platform?: Readonly<App.Platform>,
-): Promise<
-	| {
-			id: string;
-			content: string;
-			on: number;
-	  }
-	| undefined
-> {
+): Promise<z.infer<typeof DocSchema> | undefined> {
 	if (dev || !platform) {
 		return DEV_STORE.get(id);
 	}
@@ -74,13 +72,7 @@ export async function del(id: string, platform?: Readonly<App.Platform>): Promis
 export async function search(
 	q: string,
 	platform?: Readonly<App.Platform>,
-): Promise<
-	{
-		id: string;
-		content: string;
-		on: number;
-	}[]
-> {
+): Promise<z.infer<typeof DocSchema>[]> {
 	if (dev || !platform) {
 		return Array.from(DEV_STORE.values());
 	}
@@ -90,7 +82,7 @@ export async function search(
 	const cached = await cache.match(cache_key);
 	if (cached) {
 		console.log("search cache hit", q);
-		const json = await cached.json<{ id: string; content: string; on: number }[]>();
+		const json = await cached.json<z.infer<typeof DocSchema>[]>();
 		return json;
 	}
 	console.log("search cache miss", q);
@@ -103,11 +95,7 @@ export async function search(
 		}),
 	);
 
-	const result = docs.filter((doc) => doc !== undefined) as {
-		id: string;
-		content: string;
-		on: number;
-	}[];
+	const result = docs.filter((doc) => doc !== undefined) as z.infer<typeof DocSchema>[];
 
 	platform.context.waitUntil(cache.put(cache_key, new Response(JSON.stringify(result))), {
 		headers: {

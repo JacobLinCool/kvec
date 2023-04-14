@@ -11,6 +11,7 @@
 		"doc-max-characters": "1 ~ 16,000 文字",
 		"document-content": "ドキュメントの内容",
 		"document-created": "ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> で作成されたドキュメント",
+		"document-metadata": "ドキュメントのメタデータ",
 		"expiration": "有効期限",
 		"list": "リスト",
 		"list-all-document-keys": "すべてのドキュメント キーの一覧表示",
@@ -33,9 +34,9 @@
 	"goto-github": "GitHub リポジトリにアクセスする",
 	"lang": {
 		"en": "English",
-		"zh-TW": "正體中文",
+		"ja": "日本語",
 		"zh-CN": "简体中文",
-		"ja": "日本語"
+		"zh-TW": "正體中文"
 	},
 	"language": "言語",
 	"login": {

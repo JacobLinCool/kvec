@@ -39,15 +39,20 @@ export const POST: RequestHandler = async ({ request, locals, platform }) => {
 	const doc = z
 		.object({
 			content: z.string().min(1),
+			metadata: z
+				.record(z.string(), z.any())
+				.optional()
+				.default({})
+				.refine((v) => JSON.stringify(v).length <= 1000),
 			wait: z.boolean().optional(),
 		})
 		.parse(body);
 
 	const id = await hash(doc.content);
 	if (doc.wait !== false) {
-		await put(id, doc.content, platform);
+		await put(id, doc, platform);
 	} else if (platform) {
-		platform.context.waitUntil(put(id, doc.content, platform));
+		platform.context.waitUntil(put(id, doc, platform));
 	}
 
 	return json({ id });

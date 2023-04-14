@@ -5,6 +5,8 @@
 	import CreateToken from "./CreateToken.svelte";
 	import Language from "$lib/component/Language.svelte";
 	import { t } from "svelte-i18n";
+	import type { DocSchema } from "$lib/server/store";
+	import type { z } from "zod";
 
 	let token: string | null = null;
 
@@ -18,10 +20,18 @@
 	let running = false;
 
 	let doc_content = "";
+	let doc_metadata = "{}";
+	$: good_metadata = (() => {
+		try {
+			return JSON.parse(doc_metadata) && doc_metadata.length <= 1000;
+		} catch {
+			return false;
+		}
+	})();
 	let doc_created = "";
 
 	let search_query = "";
-	let search_results: { id: string; content: string; on: number }[] = [];
+	let search_results: z.infer<typeof DocSchema>[] = [];
 	let search_done = false;
 	$: {
 		search_query;
@@ -44,7 +54,7 @@
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({ content: doc_content }),
+				body: JSON.stringify({ content: doc_content, metadata: JSON.parse(doc_metadata) }),
 			});
 
 			if (res.ok) {
@@ -116,7 +126,7 @@
 			});
 
 			const { docs } = await res.json<{
-				docs: { id: string; content: string; on: number }[];
+				docs: z.infer<typeof DocSchema>[];
 			}>();
 			search_results = docs;
 			search_done = true;
@@ -181,6 +191,15 @@
 								<div class="max-h-60 w-full overflow-auto">
 									<pre class="text-sm">{doc.content}</pre>
 								</div>
+								{#if Object.keys(doc.metadata).length}
+									<div class="max-h-60 w-full overflow-auto">
+										<pre class="font-mono text-sm text-info">{JSON.stringify(
+												doc.metadata,
+												null,
+												4,
+											)}</pre>
+									</div>
+								{/if}
 								<div class="card-actions justify-end">
 									<button
 										class="btn-outline btn-error btn-sm btn"
@@ -211,13 +230,23 @@
 					<label class="label" for="">
 						<span class="label-text-alt">{$t("dash.doc-max-characters")}</span>
 					</label>
+
+					<label class="label" for="">
+						<span class="label-text">{$t("dash.document-metadata")}</span>
+					</label>
+					<textarea
+						class="textarea-bordered textarea h-12 resize-y font-mono"
+						class:textarea-error={!good_metadata}
+						bind:value={doc_metadata}
+						placeholder={"{}"}
+					/>
 				</div>
 				<div class="card-actions justify-end">
 					<button
 						class="btn"
 						class:btn-primary={!!doc_content}
 						on:click={add}
-						disabled={running}
+						disabled={running || !doc_content || !good_metadata}
 					>
 						{$t("dash.add")}
 					</button>
