@@ -11,6 +11,7 @@
 		"doc-max-characters": "1 ~ 16,000 個字元",
 		"document-content": "文件內容",
 		"document-created": "文件 ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> 建立成功",
+		"document-metadata": "文件元資料",
 		"expiration": "到期日",
 		"list": "列出",
 		"list-all-document-keys": "列出所有文件 ID",
@@ -33,9 +34,9 @@
 	"goto-github": "前往 GitHub 專案",
 	"lang": {
 		"en": "English",
-		"zh-TW": "正體中文",
+		"ja": "日本語",
 		"zh-CN": "简体中文",
-		"ja": "日本語"
+		"zh-TW": "正體中文"
 	},
 	"language": "語言",
 	"login": {
