@@ -12,14 +12,14 @@ You will need to set up a [Cloudflare Pages](https://pages.cloudflare.com/) proj
 
 You should set up the following environment variables:
 
-- `PINECONE_API_KEY`: API access key for Pinecone
-- `PINECONE_ENDPOINT`: The endpoint of your Pinecone index
-- `OPENAI_API_KEY`: API access key for OpenAI
 - `APP_SECRET`: Secret for signing JWT tokens
+- `PINECONE_API_KEY`: To enable `PineconeVecStore` (see [Structure](#structure))
+- `PINECONE_ENDPOINT`: The endpoint of your Pinecone index, nessary for `PineconeVecStore`
+- `OPENAI_API_KEY`: To enable `OpenAIEncoder` (see [Structure](#structure))
 
 And bind a KV namespace:
 
-- `KV`: KV namespace for storing items
+- `KV`: KV namespace for storing items, nessary for `CloudflareKVItemStore` (see [Structure](#structure))
 
 ## GUI
 
@@ -172,8 +172,19 @@ curl -X GET \
 }
 ```
 
-## Methology
+## Structure
 
-### Storing Strategies
+The KVec structure is mainly based on 4 components:
 
-- Source of Truth: The ItemStore is the source of truth for the data.
+- The **API** and GUI layer, which allows other services to interact with KVec easily and manage the authorizations.
+- The **Encoder** layer, which is responsible for encoding the data into vectors (embeddings).
+- The **ItemStore** layer, which is responsible for storing the items itself.
+- The **VecStore** layer, which is responsible for storing the vectors, and performing the search.
+
+The Encoder, ItemStore, and VecStore layers are all pluggable, so you can easily customize them to fit your needs.
+
+Currently, the following implementations are available:
+
+- **Encoder**: `OpenAIEncoder`, `JustEncoder` (for local development)
+- **ItemStore**: `CloudflareKVItemStore`, `MemoryItemStore` (for local development)
+- **VecStore**: `PineconeVecStore`, `MemoryVecStore` (for local development)
