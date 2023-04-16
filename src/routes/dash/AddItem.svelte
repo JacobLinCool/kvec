@@ -27,7 +27,7 @@
 					data: {
 						text: item_text,
 					},
-					metadata: { $type: item_type },
+					metadata: { type: item_type },
 				}),
 			});
 

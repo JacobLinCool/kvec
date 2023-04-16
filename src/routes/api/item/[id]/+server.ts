@@ -1,7 +1,7 @@
 import { $t } from "$lib/server/i18n";
 import { get, del } from "$lib/server/store";
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
+import type { RequestHandler } from "./types";
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	if (!locals.auth?.perm.read) {

@@ -5,7 +5,7 @@ export const RawItemSchema: z.Schema<RawItem> = z.object({
 	data: z.record(z.string(), z.unknown()),
 	metadata: z
 		.object({
-			$type: z.string(),
+			type: z.string(),
 		})
 		.passthrough()
 		.catchall(z.unknown()),
@@ -16,8 +16,8 @@ export const ItemSchema: z.Schema<Item> = z.object({
 	data: z.record(z.string(), z.unknown()),
 	metadata: z
 		.object({
-			$type: z.string(),
-			$encode: z.string(),
+			type: z.string(),
+			enc: z.string(),
 		})
 		.passthrough()
 		.catchall(z.unknown()),

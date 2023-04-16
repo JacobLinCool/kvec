@@ -3,10 +3,12 @@ import type { Encoder, RawItem } from "$lib/types";
 import type { CreateEmbeddingResponse } from "openai";
 import { hash } from "../hash";
 
+const MODEL = "text-embedding-ada-002";
+
 export class OpenAIEncoder implements Encoder {
 	async accept(type: string): Promise<string | null> {
 		if (type === "text") {
-			return "text-embedding-ada-002";
+			return MODEL;
 		}
 		return null;
 	}
@@ -16,31 +18,26 @@ export class OpenAIEncoder implements Encoder {
 			throw new Error("Invalid item type");
 		}
 
-		const embeddings = await embed(item.data.text);
-		const id = `${item.metadata.$type}:${await hash(item.data.text)}`;
-		return [embeddings[0], id];
+		if (!env.OPENAI_API_KEY) {
+			throw new Error("Missing OPENAI_API_KEY");
+		}
+
+		const embeddings = embed(item.data.text);
+		const id = `${item.metadata.type}:${await hash(item.data.text)}`;
+		return [(await embeddings)[0], id];
 	}
 }
 
-export async function embed(content: string[] | string): Promise<number[][]> {
-	if (!env.OPENAI_API_KEY) {
-		throw new Error("Missing OPENAI_API_KEY");
-	}
-
-	if (!Array.isArray(content)) {
-		content = [content];
-	}
-
+export async function embed(content: string): Promise<number[][]> {
 	const res = await fetch("https://api.openai.com/v1/embeddings", {
 		method: "POST",
 		headers: {
-			Accept: "application/json",
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${env.OPENAI_API_KEY}`,
 		},
 		body: JSON.stringify({
-			model: "text-embedding-ada-002",
-			input: content,
+			model: MODEL,
+			input: [content],
 		}),
 	});
 

@@ -50,11 +50,15 @@ export class PineconeVecStore implements VecStore {
 				includeMetadata: false,
 				vector,
 				topK: opt?.k ?? 10,
-				filter: opt?.type ? { $type: opt.type } : undefined,
+				filter: opt?.type ? { type: opt.type } : undefined,
 			}),
 		});
 
 		if (!res.ok) {
+			const text = await res.text();
+			if (text) {
+				throw new Error(res.statusText + ": " + text);
+			}
 			throw new Error(res.statusText);
 		}
 

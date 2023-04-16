@@ -2,9 +2,9 @@ import { $t } from "$lib/server/i18n";
 import { RawItemSchema } from "$lib/server/schema";
 import { put, search } from "$lib/server/store";
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./$types";
+import type { RequestHandler } from "./types";
 
-export const GET: RequestHandler = async ({ url, locals }) => {
+export const GET: RequestHandler = async ({ url, locals, platform }) => {
 	if (!locals.auth?.perm.read) {
 		throw error(403, await $t("error.read-permission-required"));
 	}
@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	const items = await search(
 		{
-			metadata: { $type: url.searchParams.get("type") || "text" },
+			metadata: { type: url.searchParams.get("type") || "text" },
 			data: { text: q },
 		},
 		{
@@ -27,6 +27,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			threshold: parseFloat(url.searchParams.get("threshold") || "") || undefined,
 			type: url.searchParams.get("type") || undefined,
 		},
+		platform,
 	);
 	return json({ items });
 };

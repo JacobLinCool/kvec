@@ -65,7 +65,7 @@ The item API allows you to create, read, delete, and search items.
 curl -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    -d '{ "data": { text: "the content of the item" }, "metadata": { "$type": "text" } }' \
+    -d '{ "data": { text: "the content of the item" }, "metadata": { "type": "text" } }' \
     https://kvec.yourdomain.com/api/item
 ```
 
@@ -98,8 +98,8 @@ curl -X GET \
             "text": "the content of the item"
         },
         "metadata": {
-            "$type": "text",
-            "$encode": "text-embedding-ada-002"
+            "type": "text",
+            "enc": "text-embedding-ada-002"
         }
     }
 }
@@ -125,8 +125,8 @@ curl -X DELETE \
             "text": "the content of the item"
         },
         "metadata": {
-            "$type": "text",
-            "$encode": "text-embedding-ada-002"
+            "type": "text",
+            "enc": "text-embedding-ada-002"
         }
     }
 }
@@ -154,8 +154,8 @@ curl -X GET \
                 "text": "the content of item 1"
             },
             "metadata": {
-                "$type": "text",
-                "$encode": "text-embedding-ada-002"
+                "type": "text",
+                "enc": "text-embedding-ada-002"
             }
         },
         {
@@ -164,8 +164,8 @@ curl -X GET \
                 "text": "the content of item 2"
             },
             "metadata": {
-                "$type": "text",
-                "$encode": "text-embedding-ada-002"
+                "type": "text",
+                "enc": "text-embedding-ada-002"
             }
         }
     ]

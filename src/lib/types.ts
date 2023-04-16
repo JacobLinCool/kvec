@@ -1,6 +1,6 @@
 export interface RawItem {
 	metadata: {
-		$type: string;
+		type: string;
 		[key: string]: unknown;
 	};
 	data: {
@@ -11,8 +11,8 @@ export interface RawItem {
 export interface Item {
 	id: string;
 	metadata: {
-		$type: string;
-		$encode: string;
+		type: string;
+		enc: string;
 		[key: string]: unknown;
 	};
 	data: {
@@ -22,7 +22,7 @@ export interface Item {
 
 export interface TextItem extends Item {
 	metadata: {
-		$type: "text";
+		type: "text";
 	} & Item["metadata"];
 	data: {
 		text: string;
@@ -31,7 +31,7 @@ export interface TextItem extends Item {
 
 export interface AliasItem extends Item {
 	metadata: {
-		$type: "alias";
+		type: "alias";
 	} & Item["metadata"];
 	data: {
 		id: string;
@@ -40,7 +40,7 @@ export interface AliasItem extends Item {
 
 export interface WebpageItem extends Item {
 	metadata: {
-		$type: "webpage";
+		type: "webpage";
 	} & Item["metadata"];
 	data: {
 		url: string;
@@ -49,7 +49,7 @@ export interface WebpageItem extends Item {
 
 export interface ImageItem extends Item {
 	metadata: {
-		$type: "image";
+		type: "image";
 	} & Item["metadata"];
 	data: {
 		src: string;

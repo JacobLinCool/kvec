@@ -64,7 +64,7 @@ export class MemoryVecStore implements VecStore {
 		const results: { id: string; score: number }[] = [];
 
 		for (const [id, vec] of this.vectors.entries()) {
-			if (opt?.type !== undefined && opt.type !== vec.m.$type) {
+			if (opt?.type !== undefined && opt.type !== vec.m.type) {
 				continue;
 			}
 
@@ -98,7 +98,7 @@ export class JustEncoder implements Encoder {
 		}
 
 		const v = [1, 1, 1];
-		const id = `${item.metadata.$type}:${await hash(item.data.text)}`;
+		const id = `${item.metadata.type}:${await hash(item.data.text)}`;
 
 		return [v, id];
 	}
