@@ -19,11 +19,11 @@ You should set up the following environment variables:
 
 And bind a KV namespace:
 
-- `KV`: KV namespace for storing documents
+- `KV`: KV namespace for storing items
 
 ## GUI
 
-You can use the dashboard GUI to manage documents and issue tokens.
+You can use the dashboard GUI to manage items and issue tokens.
 
 You can access the dashboard from `https://kvec.yourdomain.com/`.
 
@@ -31,7 +31,7 @@ You can access the dashboard from `https://kvec.yourdomain.com/`.
 
 ### Authentication
 
-You will need to get a JWT token to make requests to the document API.
+You will need to get a JWT token to make requests to the item API.
 
 One way to do this is to use the dashboard GUI.
 
@@ -53,11 +53,11 @@ curl -X POST \
 
 > The token can be passed in the `Authorization` header of the request or the `kvec_token` cookie.
 
-### Document API
+### Item API
 
-The document API allows you to create, read, delete, and search documents.
+The item API allows you to create, read, delete, and search items.
 
-#### Create a document
+#### Create an item
 
 `write` permission is required.
 
@@ -65,17 +65,21 @@ The document API allows you to create, read, delete, and search documents.
 curl -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    -d '{ "content": "the content of the document" }' \
-    https://kvec.yourdomain.com/api/doc
+    -d '{ "data": { text: "the content of the item" }, "metadata": { "$type": "text" } }' \
+    https://kvec.yourdomain.com/api/item
 ```
 
 ```json
 {
-    "id": "DOCUMENT_ID"
+    "id": "ITEM_ID"
 }
 ```
 
-#### Read a document
+> This will create a new `text` item with the content `the content of the item`.
+> Currently, only `text` items are supported.
+> But we are planning to support more types in the future, such as `image` and `webpage`.
+
+#### Read an item
 
 `read` permission is required.
 
@@ -83,20 +87,25 @@ curl -X POST \
 curl -X GET \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    https://kvec.yourdomain.com/api/doc/<DOCUMENT_ID>
+    https://kvec.yourdomain.com/api/item/<ITEM_ID>
 ```
 
 ```json
 {
-    "doc": {
-        "id": "DOCUMENT_ID",
-        "content": "the content of the document",
-        "on": 1681467661006
+    "item": {
+        "id": "ITEM_ID",
+        "data": {
+            "text": "the content of the item"
+        },
+        "metadata": {
+            "$type": "text",
+            "$encode": "text-embedding-ada-002"
+        }
     }
 }
 ```
 
-#### Delete a document
+#### Delete an item
 
 `write` permission is required.
 
@@ -104,23 +113,28 @@ curl -X GET \
 curl -X DELETE \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    https://kvec.yourdomain.com/api/doc/<DOCUMENT_ID>
+    https://kvec.yourdomain.com/api/item/<ITEM_ID>
 ```
 
 ```json
 {
     "deleted": true,
-    "doc": {
-        "id": "DOCUMENT_ID",
-        "content": "the content of the document",
-        "on": 1681467661006
+    "item": {
+        "id": "ITEM_ID",
+        "data": {
+            "text": "the content of the item"
+        },
+        "metadata": {
+            "$type": "text",
+            "$encode": "text-embedding-ada-002"
+        }
     }
 }
 ```
 
-#### Search documents
+#### Search items
 
-It performs a semantic search to find documents that are similar to the query.
+It performs a semantic search to find items that are similar to the query.
 
 `read` permission is required.
 
@@ -128,22 +142,38 @@ It performs a semantic search to find documents that are similar to the query.
 curl -X GET \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    https://kvec.yourdomain.com/api/doc?q=<QUERY>
+    https://kvec.yourdomain.com/api/item?q=<QUERY>
 ```
 
 ```json
 {
-    "docs": [
+    "items": [
         {
-            "id": "DOCUMENT_ID_1",
-            "content": "the content of the document 1",
-            "on": 1681467661006
+            "id": "ITEM_ID_1",
+            "data": {
+                "text": "the content of item 1"
+            },
+            "metadata": {
+                "$type": "text",
+                "$encode": "text-embedding-ada-002"
+            }
         },
         {
-            "id": "DOCUMENT_ID_2",
-            "content": "the content of the document 2",
-            "on": 1681467661006
+            "id": "ITEM_ID_2",
+            "data": {
+                "text": "the content of item 2"
+            },
+            "metadata": {
+                "$type": "text",
+                "$encode": "text-embedding-ada-002"
+            }
         }
     ]
 }
 ```
+
+## Methology
+
+### Storing Strategies
+
+- Source of Truth: The ItemStore is the source of truth for the data.

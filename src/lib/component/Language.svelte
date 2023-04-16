@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { get } from "$lib/preference";
 	import { onMount, onDestroy } from "svelte";
 	import { t, locale, locales } from "svelte-i18n";
-	import { get } from "$lib/preference";
 	import { writable } from "svelte/store";
 
 	let lang = writable<string | null | undefined>(undefined);

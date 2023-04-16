@@ -1,32 +1,91 @@
 import { env } from "$env/dynamic/private";
+import type { RawItem, VecStore, VectorFindOption } from "$lib/types";
 
-export async function upsert(
-	vectors: { id: string; values: number[]; metadata?: Record<string, string> }[],
-): Promise<void> {
-	if (!env.PINECONE_API_KEY) {
-		throw new Error("Missing PINECONE_API_KEY");
+export class PineconeVecStore implements VecStore {
+	async put(id: string, vector: number[], metadata: RawItem["metadata"]) {
+		const { key, endpoint } = check_env();
+
+		const res = await fetch(`https://${endpoint}/vectors/upsert`, {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Api-Key": key,
+			},
+			body: JSON.stringify({ vectors: [{ id, values: vector, metadata }] }),
+		});
+
+		if (!res.ok) {
+			throw new Error(res.statusText);
+		}
 	}
 
-	if (!env.PINECONE_ENDPOINT) {
-		throw new Error("Missing PINECONE_ENDPOINT");
+	async has(id: string) {
+		const { key, endpoint } = check_env();
+
+		const res = await fetch(`https://${endpoint}/vectors/fetch?ids=${id}`, {
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Api-Key": key,
+			},
+		});
+
+		const result = await res.json<{ vectors: Record<string, unknown> }>();
+		return result.vectors[id] !== undefined;
 	}
 
-	const res = await fetch(`https://${env.PINECONE_ENDPOINT}/vectors/upsert`, {
-		method: "POST",
-		headers: {
-			Accept: "application/json",
-			"Content-Type": "application/json",
-			"Api-Key": env.PINECONE_API_KEY,
-		},
-		body: JSON.stringify({ vectors }),
-	});
+	async find(vector: number[], opt?: VectorFindOption): Promise<{ id: string; score: number }[]> {
+		const { key, endpoint } = check_env();
 
-	if (!res.ok) {
-		throw new Error(res.statusText);
+		const res = await fetch(`https://${endpoint}/query`, {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Api-Key": key,
+			},
+			body: JSON.stringify({
+				includeValues: false,
+				includeMetadata: false,
+				vector,
+				topK: opt?.k ?? 10,
+				filter: opt?.type ? { $type: opt.type } : undefined,
+			}),
+		});
+
+		if (!res.ok) {
+			throw new Error(res.statusText);
+		}
+
+		const result: {
+			matches: { id: string; score: number }[];
+		} = await res.json();
+		console.log(result.matches);
+
+		return result.matches.filter((match) => match.score >= (opt?.threshold ?? 0.76));
+	}
+
+	async del(id: string) {
+		const { key, endpoint } = check_env();
+
+		const res = await fetch(`https://${endpoint}/vectors/delete`, {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				"Api-Key": key,
+			},
+			body: JSON.stringify({ ids: [id], deleteAll: false }),
+		});
+
+		if (!res.ok) {
+			throw new Error(res.statusText);
+		}
 	}
 }
 
-export async function remove(ids: string[] | string): Promise<void> {
+function check_env(): { key: string; endpoint: string } {
 	if (!env.PINECONE_API_KEY) {
 		throw new Error("Missing PINECONE_API_KEY");
 	}
@@ -35,57 +94,5 @@ export async function remove(ids: string[] | string): Promise<void> {
 		throw new Error("Missing PINECONE_ENDPOINT");
 	}
 
-	if (!Array.isArray(ids)) {
-		ids = [ids];
-	}
-
-	const res = await fetch(`https://${env.PINECONE_ENDPOINT}/vectors/delete`, {
-		method: "POST",
-		headers: {
-			Accept: "application/json",
-			"Content-Type": "application/json",
-			"Api-Key": env.PINECONE_API_KEY,
-		},
-		body: JSON.stringify({ ids, deleteAll: false }),
-	});
-
-	if (!res.ok) {
-		throw new Error(res.statusText);
-	}
-}
-
-export async function query(vector: number[], k = 10): Promise<{ id: string; score: number }[]> {
-	if (!env.PINECONE_API_KEY) {
-		throw new Error("Missing PINECONE_API_KEY");
-	}
-
-	if (!env.PINECONE_ENDPOINT) {
-		throw new Error("Missing PINECONE_ENDPOINT");
-	}
-
-	const res = await fetch(`https://${env.PINECONE_ENDPOINT}/query`, {
-		method: "POST",
-		headers: {
-			Accept: "application/json",
-			"Content-Type": "application/json",
-			"Api-Key": env.PINECONE_API_KEY,
-		},
-		body: JSON.stringify({
-			includeValues: false,
-			includeMetadata: false,
-			vector,
-			topK: k,
-		}),
-	});
-
-	if (!res.ok) {
-		throw new Error(res.statusText);
-	}
-
-	const result: {
-		matches: { id: string; score: number }[];
-	} = await res.json();
-	console.log(result.matches);
-
-	return result.matches.filter((match) => match.score >= 0.76);
+	return { key: env.PINECONE_API_KEY, endpoint: env.PINECONE_ENDPOINT };
 }

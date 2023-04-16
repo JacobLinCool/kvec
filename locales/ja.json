@@ -10,7 +10,7 @@
 		"created-on": "{time} に作成",
 		"doc-max-characters": "1 ~ 16,000 文字",
 		"document-content": "ドキュメントの内容",
-		"document-created": "ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> で作成されたドキュメント",
+		"document-created": "ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a> で作成されたドキュメント",
 		"document-metadata": "ドキュメントのメタデータ",
 		"expiration": "有効期限",
 		"list": "リスト",

@@ -1,10 +1,12 @@
 import { env } from "$env/dynamic/private";
+import { TokenSchema } from "$lib/server/token";
 import { locale, waitLocale } from "svelte-i18n";
 import type { Handle, RequestEvent } from "@sveltejs/kit";
 import jwt from "@tsndr/cloudflare-worker-jwt";
-import { TokenSchema } from "$lib/server/token";
 
 export const handle: Handle = async ({ event, resolve }) => {
+	const t_start = Date.now();
+
 	const lang = event.request.headers.get("accept-language")?.split(",")[0] || "en";
 	locale.set(lang);
 	await waitLocale();
@@ -24,6 +26,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const result = await resolve(event);
+	const t_end = Date.now();
+	console.log(
+		`${event.request.method} ${event.request.url} ${result.status} [${t_end - t_start} ms]`,
+	);
 	return result;
 };
 

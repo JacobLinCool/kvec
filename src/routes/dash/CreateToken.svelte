@@ -8,10 +8,6 @@
 		.toString();
 	let perm = { read: true, write: true };
 
-	$: {
-		console.log(secret, exp, perm);
-	}
-
 	let running = false;
 	let token: string | null = null;
 	let error = "";

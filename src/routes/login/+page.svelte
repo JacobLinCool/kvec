@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
 	import { goto } from "$app/navigation";
-	import { t } from "svelte-i18n";
 	import Language from "$lib/component/Language.svelte";
+	import { t } from "svelte-i18n";
+	import Icon from "@iconify/svelte";
 
 	let secret = "";
 	let running = false;

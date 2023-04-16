@@ -10,7 +10,7 @@
 		"created-on": "Created on {time}",
 		"doc-max-characters": "1 ~ 16,000 characters",
 		"document-content": "Document Content",
-		"document-created": "Document created with ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a>",
+		"document-created": "Document created with ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a>",
 		"document-metadata": "Document Metadata",
 		"expiration": "Expiration",
 		"list": "List",

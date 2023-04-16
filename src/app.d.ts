@@ -1,7 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
-
-import type { z } from "zod";
 import type { TokenSchema } from "$lib/server/token";
+import type { z } from "zod";
 
 declare global {
 	namespace App {

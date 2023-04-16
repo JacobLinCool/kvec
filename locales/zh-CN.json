@@ -10,7 +10,7 @@
 		"created-on": "创建于{time}",
 		"doc-max-characters": "1 ~ 16,000 个字符",
 		"document-content": "文件内容",
-		"document-created": "文档 ID <a class=\"text-secondary\" href=\"/api/doc/{id}\" target=\"_blank\">{id}</a> 创建",
+		"document-created": "文档 ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a> 创建",
 		"document-metadata": "文档元数据",
 		"expiration": "过期",
 		"list": "列表",

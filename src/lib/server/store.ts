@@ -1,103 +1,67 @@
-import { z } from "zod";
-import { embed } from "./openai";
-import { upsert, remove, query } from "./pinecone";
-import { dev } from "$app/environment";
+import type { RawItem, Item, VectorFindOption } from "$lib/types";
+import { AutoItemStore, AutoVecStore, AutoEncoder } from "./auto";
 
-export const DocSchema = z.object({
-	id: z.string(),
-	content: z.string(),
-	metadata: z.record(z.string(), z.any()),
-	on: z.number(),
-});
+const encoder = new AutoEncoder();
+const store = new AutoItemStore();
+const vec = new AutoVecStore();
 
-const DEV_STORE = new Map<string, z.infer<typeof DocSchema>>();
-
-export async function put(
-	id: string,
-	doc: { content: string; metadata: Record<string, unknown> },
-	platform?: Readonly<App.Platform>,
-): Promise<void> {
-	if (dev || !platform) {
-		DEV_STORE.set(id, { id, content: doc.content, metadata: doc.metadata, on: Date.now() });
-		return;
+export async function put(raw: RawItem): Promise<string> {
+	const encode = await encoder.accept(raw.metadata.$type);
+	if (!encode) {
+		throw new Error(`cannot encode ${raw.metadata.$type}`);
 	}
 
-	const [embedding] = await embed([doc.content]);
+	const [embedding, id] = await encoder.encode(raw);
 
-	await upsert([{ id, values: embedding }]);
+	await Promise.all([
+		store.put({ id, ...raw, metadata: { ...raw.metadata, $encode: encode } }),
+		vec.put(id, embedding, raw.metadata),
+	]);
 
-	const key = `doc:${id}`;
-	await platform.env.KV.put(
-		key,
-		JSON.stringify({
-			id,
-			content: doc.content,
-			metadata: doc.metadata,
-			on: Date.now(),
-		}),
-		{
-			metadata: doc.metadata,
-		},
-	);
+	return id;
 }
 
-export async function get(
-	id: string,
-	platform?: Readonly<App.Platform>,
-): Promise<z.infer<typeof DocSchema> | undefined> {
-	if (dev || !platform) {
-		return DEV_STORE.get(id);
-	}
-
-	const key = `doc:${id}`;
-	const value = await platform.env.KV.get(key, "json");
-	if (!value) {
+export async function get(id: string): Promise<Item | undefined> {
+	const item = await store.get(id);
+	if (!item) {
 		return undefined;
 	}
 
-	return DocSchema.parse(value);
+	return item;
 }
 
-export async function del(id: string, platform?: Readonly<App.Platform>): Promise<void> {
-	if (dev || !platform) {
-		DEV_STORE.delete(id);
-		return;
-	}
-
-	const key = `doc:${id}`;
-	await platform.env.KV.delete(key);
-	await remove(id);
+export async function del(id: string): Promise<void> {
+	await Promise.all([vec.del(id), store.del(id)]);
 }
 
 export async function search(
-	q: string,
+	q: RawItem,
+	option?: VectorFindOption,
 	platform?: Readonly<App.Platform>,
-): Promise<z.infer<typeof DocSchema>[]> {
-	if (dev || !platform) {
-		return Array.from(DEV_STORE.values());
-	}
-
-	const cache = await platform.caches.open("kvec:search");
-	const cache_key = new Request(`https://kvec.csie.cool/_cache/api/doc?q=${q}`);
-	const cached = await cache.match(cache_key);
+): Promise<Item[]> {
+	const cache = await platform?.caches.open("kvec:search");
+	const cache_key = new Request(`https://kvec.csie.cool/_cache/api/item?q=${q}`);
+	const cached = await cache?.match(cache_key);
 	if (cached) {
 		console.log("search cache hit", q);
-		const json = await cached.json<z.infer<typeof DocSchema>[]>();
+		const json = await cached.json<Item[]>();
 		return json;
 	}
 	console.log("search cache miss", q);
 
-	const [embedding] = await embed(q);
-	const results = await query(embedding, 10);
-	const docs = await Promise.all(
-		results.map(async (result) => {
-			return await get(result.id, platform);
-		}),
-	);
+	await encoder.accept(q.metadata.$type);
+	const [embedding] = await encoder.encode(q);
 
-	const result = docs.filter((doc) => doc !== undefined) as z.infer<typeof DocSchema>[];
+	const similar = await vec.find(embedding, {
+		k: option?.k ?? 10,
+		threshold: option?.threshold ?? 0.76,
+		type: q.metadata.$type,
+	});
 
-	platform.context.waitUntil(cache.put(cache_key, new Response(JSON.stringify(result))), {
+	const items = await Promise.all(similar.map((v) => store.get(v.id)));
+	const result = items.filter((item) => item) as Item[];
+
+	platform?.context.waitUntil(cache?.put(cache_key, new Response(JSON.stringify(result))), {
 		headers: {
 			"Content-Type": "application/json",
 			"Cache-Control": "max-age=3600",
@@ -107,25 +71,6 @@ export async function search(
 	return result;
 }
 
-export async function list(platform?: Readonly<App.Platform>): Promise<string[]> {
-	if (dev || !platform) {
-		return Array.from(DEV_STORE.keys());
-	}
-
-	const keys: string[] = [];
-	let cursor: string | undefined = undefined;
-	for (let i = 0; i < 50; i++) {
-		const result: KVNamespaceListResult<unknown> = await platform.env.KV.list({
-			prefix: "doc:",
-			cursor,
-		});
-		keys.push(...result.keys.map((key) => key.name.replace(/^doc:/, "")));
-
-		if (result.list_complete) {
-			break;
-		}
-		cursor = result.cursor;
-	}
-
-	return keys;
+export async function list(): Promise<string[]> {
+	return store.list();
 }
