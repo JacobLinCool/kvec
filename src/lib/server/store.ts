@@ -1,27 +1,35 @@
-import type { RawItem, Item, VectorFindOption } from "$lib/types";
-import { AutoItemStore, AutoVecStore, AutoEncoder } from "./auto";
+import type {
+	RawItem,
+	FindOption,
+	Store,
+	Encoder,
+	Adapter,
+	CompleteItem,
+	ObjStoreItem,
+} from "$lib/types";
+import { AutoStore, AutoEncoder, AutoAdapter, AutoCache } from "./auto";
+import { DEFAULT_CACHE_TTL } from "./constants";
 
-const encoder = new AutoEncoder();
-const store = new AutoItemStore();
-const vec = new AutoVecStore();
+const adapter: Adapter = new AutoAdapter();
+const encoder: Encoder = new AutoEncoder();
+const store: Store = new AutoStore();
 
 export async function put(raw: RawItem): Promise<string> {
-	const encode = await encoder.accept(raw.metadata.type);
-	if (!encode) {
-		throw new Error(`cannot encode ${raw.metadata.type}`);
-	}
+	const adapted = await adapter.adapt(raw);
 
-	const [embedding, id] = await encoder.encode(raw);
+	const embedding = await encoder.encode(adapted);
 
-	await Promise.all([
-		store.put({ id, ...raw, metadata: { ...raw.metadata, enc: encode } }),
-		vec.put(id, embedding, raw.metadata),
-	]);
+	const completed: CompleteItem = {
+		...adapted,
+		v: embedding,
+	};
 
-	return id;
+	await store.put(completed);
+
+	return adapted.id;
 }
 
-export async function get(id: string): Promise<Item | undefined> {
+export async function get(id: string): Promise<ObjStoreItem | undefined> {
 	const item = await store.get(id);
 	if (!item) {
 		return undefined;
@@ -31,44 +39,36 @@ export async function get(id: string): Promise<Item | undefined> {
 }
 
 export async function del(id: string): Promise<void> {
-	await Promise.all([vec.del(id), store.del(id)]);
+	await store.del(id);
 }
 
 export async function search(
 	q: RawItem,
-	option?: VectorFindOption,
+	option?: FindOption,
 	platform?: Readonly<App.Platform>,
-): Promise<Item[]> {
-	const cache = await platform?.caches.open("kvec:search");
-	const cache_key = new Request(`https://kvec.csie.cool/_cache/api/item?q=${JSON.stringify(q)}`);
-	const cached = await cache?.match(cache_key);
+): Promise<ObjStoreItem[]> {
+	const cache = new AutoCache(platform);
+	const cache_key = JSON.stringify(q);
+	const cached = await cache.get<ObjStoreItem[]>(cache_key);
 	if (cached) {
-		console.log("search cache hit", q);
-		const json = await cached.json<Item[]>();
-		return json;
+		return cached;
 	}
-	console.log("search cache miss", q);
 
-	await encoder.accept(q.metadata.type);
-	const [embedding] = await encoder.encode(q);
+	const adapted = await adapter.adapt(q);
+	const embedding = await encoder.encode(adapted);
 
-	const similar = await vec.find(embedding, {
-		k: option?.k ?? 10,
-		threshold: option?.threshold ?? 0.76,
-		type: q.metadata.type,
-	});
+	const search: CompleteItem = {
+		id: adapted.id,
+		data: adapted.data,
+		meta: q.meta || {},
+		ft: adapted.ft,
+		v: embedding,
+	};
 
-	const items = await Promise.all(similar.map((v) => store.get(v.id)));
-	const result = items.filter((item) => item) as Item[];
+	const results = await store.find(search, option ?? {});
 
-	platform?.context.waitUntil(cache?.put(cache_key, new Response(JSON.stringify(result))), {
-		headers: {
-			"Content-Type": "application/json",
-			"Cache-Control": "max-age=3600",
-		},
-	});
-
-	return result;
+	cache.put(cache_key, results, DEFAULT_CACHE_TTL);
+	return results;
 }
 
 export async function list(): Promise<string[]> {

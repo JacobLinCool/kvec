@@ -4,11 +4,19 @@ Use Cloudflare KV with OpenAI Text Embedding and Pinecone Vector Database.
 
 ![icon](static/icon.png)
 
+## Features
+
+- Support for different item types: KVec supports text, web page, and image items out of the box, and you can easily extend it to support other types.
+- Modular architecture: KVec allows you to easily change components like the encoder, object store, and vector store to fit your specific use case.
+- Authentication: KVec supports authentication using JWT tokens.
+- Dashboard GUI: KVec comes with a simple dashboard that allows you to manage your items and issue authentication tokens.
+- RESTful API: KVec provides a simple API for creating, reading, deleting, and searching items.
+
 ## Setup
 
-You will need to set up a [Cloudflare Pages](https://pages.cloudflare.com/) project first.
+### Cloudflare Pages
 
-### Requirements
+To use [Cloudflare Pages](https://pages.cloudflare.com/) to host your KVec.
 
 You should set up the following environment variables:
 
@@ -16,10 +24,17 @@ You should set up the following environment variables:
 - `PINECONE_API_KEY`: To enable `PineconeVecStore` (see [Structure](#structure))
 - `PINECONE_ENDPOINT`: The endpoint of your Pinecone index, nessary for `PineconeVecStore`
 - `OPENAI_API_KEY`: To enable `OpenAIEncoder` (see [Structure](#structure))
+- `HF_API_TOKEN`: To enable `BaseTextAdapter`'s image feature
 
 And bind a KV namespace:
 
-- `KV`: KV namespace for storing items, nessary for `CloudflareKVItemStore` (see [Structure](#structure))
+- `KV`: KV namespace for storing items, nessary for `CloudflareKVObjStore` (see [Structure](#structure))
+
+> You can simply:
+>
+> 1. Fork this repo.
+> 2. Create a new Cloudflare Pages project, connect to your forked repo, and setup the environment variables.
+> 3. Create a KV namespace and bind it to the project.
 
 ## GUI
 
@@ -65,7 +80,7 @@ The item API allows you to create, read, delete, and search items.
 curl -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: YOUR_TOKEN" \
-    -d '{ "data": { text: "the content of the item" }, "metadata": { "type": "text" } }' \
+    -d '{ "data": { text: "the content of the item" } }' \
     https://kvec.yourdomain.com/api/item
 ```
 
@@ -75,9 +90,32 @@ curl -X POST \
 }
 ```
 
-> This will create a new `text` item with the content `the content of the item`.
-> Currently, only `text` items are supported.
-> But we are planning to support more types in the future, such as `image` and `webpage`.
+> This will create a new item with the text `the content of the item`.
+
+Examples for other types of items:
+
+> Web page. The `BaseTextAdapter` will automatically fetch and use the page title and description as the page feature.
+
+```json
+{
+    "data": {
+        "page": "https://github.com/JacobLinCool/kvec"
+    }
+}
+```
+
+> Image. `HF_API_TOKEN` environment variable is required.
+> It uses Hugging Face's inference API to transform the image into text as the image feature.
+> The default model is `nlpconnect/vit-gpt2-image-captioning`, but you can specify a different model by setting the `HF_IMGCAP_MODEL` environment variable.
+> `http://`, `https://`, and `data:` are supported.
+
+```json
+{
+    "data": {
+        "img": "https://kvec.pages.dev/icon.png"
+    }
+}
+```
 
 #### Read an item
 
@@ -97,9 +135,8 @@ curl -X GET \
         "data": {
             "text": "the content of the item"
         },
-        "metadata": {
-            "type": "text",
-            "enc": "text-embedding-ada-002"
+        "meta": {
+            "type": "text"
         }
     }
 }
@@ -124,9 +161,8 @@ curl -X DELETE \
         "data": {
             "text": "the content of the item"
         },
-        "metadata": {
-            "type": "text",
-            "enc": "text-embedding-ada-002"
+        "meta": {
+            "type": "text"
         }
     }
 }
@@ -153,19 +189,28 @@ curl -X GET \
             "data": {
                 "text": "the content of item 1"
             },
-            "metadata": {
-                "type": "text",
-                "enc": "text-embedding-ada-002"
+            "meta": {
+                "type": "text"
             }
         },
         {
             "id": "ITEM_ID_2",
             "data": {
-                "text": "the content of item 2"
+                "text": "the content of item 2",
+                "page": "https://example.com/item2"
             },
-            "metadata": {
-                "type": "text",
-                "enc": "text-embedding-ada-002"
+            "meta": {
+                "type": "page"
+            }
+        },
+        {
+            "id": "ITEM_ID_3",
+            "data": {
+                "text": "the content of item 2",
+                "img": "https://example.com/item3.png"
+            },
+            "meta": {
+                "type": "img"
             }
         }
     ]
@@ -174,17 +219,31 @@ curl -X GET \
 
 ## Structure
 
-The KVec structure is mainly based on 4 components:
+The KVec structure is mainly based on 6 components:
 
 - The **API** and GUI layer, which allows other services to interact with KVec easily and manage the authorizations.
+- The **Adapter** layer, which is responsible for adapting the data from the API layer to the encoder layer.
 - The **Encoder** layer, which is responsible for encoding the data into vectors (embeddings).
-- The **ItemStore** layer, which is responsible for storing the items itself.
+- The **ObjStore** layer, which is responsible for storing the items itself.
 - The **VecStore** layer, which is responsible for storing the vectors, and performing the search.
+- The **Cache** layer, which is responsible for caching the search results.
 
-The Encoder, ItemStore, and VecStore layers are all pluggable, so you can easily customize them to fit your needs.
+The Adapter, Encoder, ObjStore, VecStore, and Cache layers are all pluggable, so you can easily customize them to fit your needs.
 
 Currently, the following implementations are available:
 
-- **Encoder**: `OpenAIEncoder`, `JustEncoder` (for local development)
-- **ItemStore**: `CloudflareKVItemStore`, `MemoryItemStore` (for local development)
-- **VecStore**: `PineconeVecStore`, `MemoryVecStore` (for local development)
+- **Adapter**
+  - [x] `BaseTextAdapter`: Support text, web page, and image _(env `HF_API_TOKEN` required)_ items.
+- **Encoder**
+  - [x] `OpenAIEncoder`: Use OpenAI's `text-embedding-ada-002` to create embeddings
+  - [ ] `CohereEncoder`: Use Cohere as the embedding service
+  - [x] `JustEncoder`: Only for local development
+- **ObjStore**
+  - [x] `CloudflareKVObjStore`: Use Cloudflare's KV as the object store backend
+  - [x] `MemoryObjStore`: Only for local development
+- **VecStore**
+  - [x] `PineconeVecStore`: Use [Pinecone](https://www.pinecone.io/) as the vector store backend
+  - [x] `MemoryVecStore`: Only for local development
+- **Cache**
+  - [x] `CloudflareCache`: Use Cloudflare's Cache API
+  - [x] `MemoryCache`: Only for local development, it just "don't cache anything"

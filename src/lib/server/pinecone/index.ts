@@ -1,8 +1,9 @@
 import { env } from "$env/dynamic/private";
-import type { RawItem, VecStore, VectorFindOption } from "$lib/types";
+import type { VecStoreItem, VecStore, VecFindOption } from "$lib/types";
+import { DEFAULT_K, DEFAULT_THRESHOLD } from "../constants";
 
 export class PineconeVecStore implements VecStore {
-	async put(id: string, vector: number[], metadata: RawItem["metadata"]) {
+	async put(item: VecStoreItem): Promise<void> {
 		const { key, endpoint } = check_env();
 
 		const res = await fetch(`https://${endpoint}/vectors/upsert`, {
@@ -12,7 +13,9 @@ export class PineconeVecStore implements VecStore {
 				"Content-Type": "application/json",
 				"Api-Key": key,
 			},
-			body: JSON.stringify({ vectors: [{ id, values: vector, metadata }] }),
+			body: JSON.stringify({
+				vectors: [{ id: item.id, values: item.v, metadata: item.meta }],
+			}),
 		});
 
 		if (!res.ok) {
@@ -20,7 +23,7 @@ export class PineconeVecStore implements VecStore {
 		}
 	}
 
-	async has(id: string) {
+	async has(id: string): Promise<boolean> {
 		const { key, endpoint } = check_env();
 
 		const res = await fetch(`https://${endpoint}/vectors/fetch?ids=${id}`, {
@@ -35,7 +38,7 @@ export class PineconeVecStore implements VecStore {
 		return result.vectors[id] !== undefined;
 	}
 
-	async find(vector: number[], opt?: VectorFindOption): Promise<{ id: string; score: number }[]> {
+	async find(item: VecStoreItem, opt: VecFindOption): Promise<{ id: string; score: number }[]> {
 		const { key, endpoint } = check_env();
 
 		const res = await fetch(`https://${endpoint}/query`, {
@@ -48,9 +51,9 @@ export class PineconeVecStore implements VecStore {
 			body: JSON.stringify({
 				includeValues: false,
 				includeMetadata: false,
-				vector,
-				topK: opt?.k ?? 10,
-				filter: opt?.type ? { type: opt.type } : undefined,
+				vector: item.v,
+				topK: opt.k ?? DEFAULT_K,
+				filter: item.meta,
 			}),
 		});
 
@@ -67,10 +70,12 @@ export class PineconeVecStore implements VecStore {
 		} = await res.json();
 		console.log(result.matches);
 
-		return result.matches.filter((match) => match.score >= (opt?.threshold ?? 0.76));
+		return result.matches.filter(
+			(match) => match.score >= (opt?.threshold ?? DEFAULT_THRESHOLD),
+		);
 	}
 
-	async del(id: string) {
+	async del(id: string): Promise<void> {
 		const { key, endpoint } = check_env();
 
 		const res = await fetch(`https://${endpoint}/vectors/delete`, {

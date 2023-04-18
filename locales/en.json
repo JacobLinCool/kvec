@@ -1,24 +1,31 @@
 {
 	"dash": {
 		"add": "Add",
-		"add-document": "Add Document",
+		"add-item": "Add Item",
 		"app-secret": "App Secret",
 		"click-to-copy": "Click to copy",
 		"copied": "Copied!",
 		"create": "Create",
 		"create-token": "Create Token",
 		"created-on": "Created on {time}",
-		"doc-max-characters": "1 ~ 16,000 characters",
-		"document-content": "Document Content",
-		"document-created": "Document created with ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a>",
+		"doc-max-characters": "1 ~ 2,000 characters",
 		"document-metadata": "Document Metadata",
 		"expiration": "Expiration",
+		"image-url": "Image URL",
+		"item-content": "Item Content",
+		"item-created": "Item created with ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a>",
+		"item-type": {
+			"img": "Image",
+			"page": "Web Page",
+			"text": "Text"
+		},
 		"list": "List",
-		"list-all-document-keys": "List All Document Keys",
+		"list-all-item-keys": "List All Item Keys",
 		"read": "Read",
 		"remove": "Remove",
 		"search": "Search",
-		"search-for-documents": "Search for documents",
+		"search-for-items": "Search for items",
+		"webpage-url": "Web Page URL",
 		"write": "Write"
 	},
 	"error": {

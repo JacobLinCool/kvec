@@ -1,30 +1,21 @@
 import { env } from "$env/dynamic/private";
-import type { Encoder, RawItem } from "$lib/types";
+import type { AdaptedItem, Encoder } from "$lib/types";
 import type { CreateEmbeddingResponse } from "openai";
-import { hash } from "../hash";
 
 const MODEL = "text-embedding-ada-002";
 
 export class OpenAIEncoder implements Encoder {
-	async accept(type: string): Promise<string | null> {
-		if (type === "text") {
-			return MODEL;
-		}
-		return null;
-	}
-
-	async encode(item: RawItem): Promise<[number[], string]> {
-		if (typeof item.data.text !== "string") {
-			throw new Error("Invalid item type");
+	async encode(item: AdaptedItem): Promise<number[]> {
+		if (typeof item.ft !== "string") {
+			throw new Error("Unsupported feature type");
 		}
 
 		if (!env.OPENAI_API_KEY) {
 			throw new Error("Missing OPENAI_API_KEY");
 		}
 
-		const embeddings = embed(item.data.text);
-		const id = `${item.metadata.type}:${await hash(item.data.text)}`;
-		return [(await embeddings)[0], id];
+		const embeddings = await embed(item.ft);
+		return embeddings[0];
 	}
 }
 
@@ -46,6 +37,6 @@ export async function embed(content: string): Promise<number[][]> {
 	}
 
 	const result: CreateEmbeddingResponse = await res.json();
-	console.log(result.usage);
+	console.log("embed", MODEL, result.usage);
 	return result.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);
 }

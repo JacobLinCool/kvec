@@ -1,13 +1,12 @@
 <script lang="ts">
-	import type { Item } from "$lib/types";
+	import type { ObjStoreItem } from "$lib/types";
 	import { t } from "svelte-i18n";
 	import Icon from "@iconify/svelte";
 
 	export let token: string;
 
-	let item_type = "text";
 	let search_query = "";
-	let search_results: Item[] = [];
+	let search_results: ObjStoreItem[] = [];
 	let search_done = false;
 	$: {
 		search_query;
@@ -24,14 +23,13 @@
 		try {
 			const url = new URL("/api/item", window.location.href);
 			url.searchParams.set("q", search_query);
-			url.searchParams.set("type", item_type);
 			const res = await fetch(url.toString(), {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
 			});
 
-			const { items } = await res.json<{ items: Item[] }>();
+			const { items } = await res.json<{ items: ObjStoreItem[] }>();
 			search_results = items;
 			search_done = true;
 		} finally {
@@ -70,7 +68,7 @@
 				<input
 					class="input-bordered input w-full outline-none transition-all focus:input-primary focus:!outline-none"
 					type="text"
-					placeholder={$t("dash.search-for-documents")}
+					placeholder={$t("dash.search-for-items")}
 					bind:value={search_query}
 				/>
 				<button
@@ -103,13 +101,19 @@
 						>
 							{item.id}
 						</a>
-						<div class="max-h-60 w-full overflow-auto">
-							<pre class="text-sm">{item.data.text}</pre>
-						</div>
-						{#if Object.keys(item.metadata).length}
+						{#if item.meta.type === "text"}
+							<div class="max-h-60 w-full overflow-auto">
+								<pre class="text-sm">{item.data.text}</pre>
+							</div>
+						{:else if item.meta.type === "page" && typeof item.data.page === "string"}
+							<a href={item.data.page} target="_blank">{item.data.text}</a>
+						{:else if item.meta.type === "img" && typeof item.data.text === "string" && typeof item.data.img === "string"}
+							<img src={item.data.img} alt={item.data.text} />
+						{/if}
+						{#if Object.keys(item.meta).length}
 							<div class="max-h-60 w-full overflow-auto">
 								<pre class="font-mono text-sm text-info">{JSON.stringify(
-										item.metadata,
+										item.meta,
 										null,
 										4,
 									)}</pre>

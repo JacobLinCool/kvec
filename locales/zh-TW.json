@@ -1,24 +1,31 @@
 {
 	"dash": {
 		"add": "新增",
-		"add-document": "新增文件",
+		"add-item": "新增物件",
 		"app-secret": "App Secret",
 		"click-to-copy": "點擊複製",
 		"copied": "已複製！",
 		"create": "建立",
 		"create-token": "建立權杖",
 		"created-on": "於 {time} 建立",
-		"doc-max-characters": "1 ~ 16,000 個字元",
-		"document-content": "文件內容",
-		"document-created": "文件 ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a> 建立成功",
+		"doc-max-characters": "1 ~ 2,000 個字元",
 		"document-metadata": "文件元資料",
 		"expiration": "到期日",
+		"image-url": "圖片網址",
+		"item-content": "物件內容",
+		"item-created": "物件 ID <a class=\"text-secondary\" href=\"/api/item/{id}\" target=\"_blank\">{id}</a> 建立成功",
+		"item-type": {
+			"img": "圖像",
+			"page": "網頁",
+			"text": "文本"
+		},
 		"list": "列出",
-		"list-all-document-keys": "列出所有文件 ID",
+		"list-all-item-keys": "列出所有物件 ID",
 		"read": "讀取",
 		"remove": "刪除",
 		"search": "搜尋",
-		"search-for-documents": "搜尋文件",
+		"search-for-items": "搜尋物件",
+		"webpage-url": "網頁網址",
 		"write": "寫入"
 	},
 	"error": {

@@ -1,27 +1,37 @@
-import type { Item, ItemStore, VecStore, Encoder, VectorFindOption, RawItem } from "$lib/types";
-import { hash } from "../hash";
+import type {
+	ObjStoreItem,
+	ObjStore,
+	VecStore,
+	Encoder,
+	VecFindOption,
+	VecStoreItem,
+	AdaptedItem,
+	ObjFindOption,
+	Cache,
+} from "$lib/types";
+import { DEFAULT_K, DEFAULT_THRESHOLD } from "../constants";
 
-export class MemoryItemStore implements ItemStore {
-	private items: Map<string, Item> = new Map();
+export class MemoryObjStore implements ObjStore {
+	private items: Map<string, ObjStoreItem> = new Map();
 
-	async put(item: Item): Promise<void> {
-		console.warn("Using MemoryItemStore, you should not see this in production");
+	async put(item: ObjStoreItem): Promise<void> {
+		console.warn("Using MemoryObjStore, you should not see this in production");
 
-		if (typeof item.data.text !== "string") {
-			throw new Error("Invalid item");
-		}
-
-		this.items.set(item.id, item);
+		this.items.set(item.id, {
+			id: item.id,
+			data: item.data,
+			meta: item.meta,
+		});
 	}
 
 	async has(id: string): Promise<boolean> {
-		console.warn("Using MemoryItemStore, you should not see this in production");
+		console.warn("Using MemoryObjStore, you should not see this in production");
 
 		return this.items.has(id);
 	}
 
-	async get(id: string): Promise<Item | null> {
-		console.warn("Using MemoryItemStore, you should not see this in production");
+	async get(id: string): Promise<ObjStoreItem | null> {
+		console.warn("Using MemoryObjStore, you should not see this in production");
 
 		const item = this.items.get(id);
 		if (item === undefined) {
@@ -30,26 +40,37 @@ export class MemoryItemStore implements ItemStore {
 		return item;
 	}
 
+	async find(item: ObjStoreItem, option: ObjFindOption): Promise<ObjStoreItem[]> {
+		console.warn("Using MemoryObjStore, you should not see this in production");
+
+		const results: ObjStoreItem[] = [];
+		return results.slice(0, option.k ?? DEFAULT_K);
+	}
+
 	async del(id: string): Promise<void> {
-		console.warn("Using MemoryItemStore, you should not see this in production");
+		console.warn("Using MemoryObjStore, you should not see this in production");
 
 		this.items.delete(id);
 	}
 
 	async list(): Promise<string[]> {
-		console.warn("Using MemoryItemStore, you should not see this in production");
+		console.warn("Using MemoryObjStore, you should not see this in production");
 
 		return [...this.items.keys()];
 	}
 }
 
 export class MemoryVecStore implements VecStore {
-	private vectors: Map<string, { v: number[]; m: RawItem["metadata"] }> = new Map();
+	private vectors: Map<string, VecStoreItem> = new Map();
 
-	async put(id: string, vector: number[], metadata: RawItem["metadata"]): Promise<void> {
+	async put(item: VecStoreItem): Promise<void> {
 		console.warn("Using MemoryVecStore, you should not see this in production");
 
-		this.vectors.set(id, { v: vector, m: metadata });
+		this.vectors.set(item.id, {
+			id: item.id,
+			v: item.v,
+			meta: item.meta,
+		});
 	}
 
 	async has(id: string): Promise<boolean> {
@@ -58,25 +79,25 @@ export class MemoryVecStore implements VecStore {
 		return this.vectors.has(id);
 	}
 
-	async find(vector: number[], opt?: VectorFindOption): Promise<{ id: string; score: number }[]> {
+	async find(item: VecStoreItem, opt: VecFindOption): Promise<{ id: string; score: number }[]> {
 		console.warn("Using MemoryVecStore, you should not see this in production");
 
 		const results: { id: string; score: number }[] = [];
 
 		for (const [id, vec] of this.vectors.entries()) {
-			if (opt?.type !== undefined && opt.type !== vec.m.type) {
+			if (typeof item.meta.type === "string" && item.meta.type !== vec.meta.type) {
 				continue;
 			}
 
-			const score = similarity(vector, vec.v);
-			if (score >= (opt?.threshold ?? 0.76)) {
+			const score = similarity(item.v, vec.v);
+			if (score >= (opt.threshold ?? DEFAULT_THRESHOLD)) {
 				results.push({ id, score });
 			}
 		}
 
 		results.sort((a, b) => b.score - a.score);
 
-		return results.slice(0, opt?.k ?? 10);
+		return results.slice(0, opt.k ?? DEFAULT_K);
 	}
 
 	async del(id: string): Promise<void> {
@@ -87,20 +108,13 @@ export class MemoryVecStore implements VecStore {
 }
 
 export class JustEncoder implements Encoder {
-	async accept(type: string): Promise<string | null> {
-		return type === "text" ? "all-1-embedding" : null;
-	}
-
-	async encode(item: RawItem): Promise<[number[], string]> {
+	async encode(item: AdaptedItem): Promise<number[]> {
 		console.warn("Using JustEncoder, you should not see this in production");
+
 		if (typeof item.data.text !== "string") {
 			throw new Error("Invalid item");
 		}
-
-		const v = [1, 1, 1];
-		const id = `${item.metadata.type}:${await hash(item.data.text)}`;
-
-		return [v, id];
+		return [1, 1, 1];
 	}
 }
 
@@ -114,4 +128,14 @@ function similarity(a: number[], b: number[]): number {
 	const norm_b = Math.sqrt(b.reduce((acc, val) => acc + val * val, 0));
 
 	return dot / (norm_a * norm_b);
+}
+
+export class MemoryCache implements Cache {
+	async put<T = unknown>(key: string, object: T, expires: number): Promise<void> {
+		return;
+	}
+
+	async get<T = unknown>(key: string): Promise<T | null> {
+		return null;
+	}
 }

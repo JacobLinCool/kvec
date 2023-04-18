@@ -2,7 +2,7 @@ import { $t } from "$lib/server/i18n";
 import { RawItemSchema } from "$lib/server/schema";
 import { put, search } from "$lib/server/store";
 import { error, json } from "@sveltejs/kit";
-import type { RequestHandler } from "./types";
+import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ url, locals, platform }) => {
 	if (!locals.auth?.perm.read) {
@@ -19,13 +19,12 @@ export const GET: RequestHandler = async ({ url, locals, platform }) => {
 
 	const items = await search(
 		{
-			metadata: { type: url.searchParams.get("type") || "text" },
 			data: { text: q },
+			meta: url.searchParams.has("type") ? { type: url.searchParams.get("type") } : undefined,
 		},
 		{
 			k: parseInt(url.searchParams.get("k") || "") || undefined,
 			threshold: parseFloat(url.searchParams.get("threshold") || "") || undefined,
-			type: url.searchParams.get("type") || undefined,
 		},
 		platform,
 	);

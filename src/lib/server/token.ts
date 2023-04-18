@@ -1,13 +1,9 @@
 import { z } from "zod";
+import { DEFAULT_TOKEN_EXP } from "./constants";
 
 export const TokenAuthSchema = z.object({
 	secret: z.string(),
-	exp: z
-		.number()
-		.positive()
-		.int()
-		.optional()
-		.default(60 * 60 * 24 * 365),
+	exp: z.number().positive().int().optional().default(DEFAULT_TOKEN_EXP),
 	perm: z
 		.object({
 			write: z.boolean().optional().default(true),

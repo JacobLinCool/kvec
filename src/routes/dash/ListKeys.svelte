@@ -52,7 +52,7 @@
 
 <div class="card w-full max-w-4xl border shadow">
 	<div class="card-body">
-		<h2 class="card-title">{$t("dash.list-all-document-keys")}</h2>
+		<h2 class="card-title">{$t("dash.list-all-item-keys")}</h2>
 		<div class="card-actions justify-end">
 			<button class="btn-outline btn-primary btn" on:click={list} disabled={running}>
 				{$t("dash.list")}

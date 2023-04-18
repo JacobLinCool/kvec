@@ -3,7 +3,7 @@ import { $t } from "$lib/server/i18n";
 import { TokenAuthSchema, TokenSchema } from "$lib/server/token";
 import { error, json } from "@sveltejs/kit";
 import jwt from "@tsndr/cloudflare-worker-jwt";
-import type { RequestHandler } from "./types";
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	if (!env.APP_SECRET) {
