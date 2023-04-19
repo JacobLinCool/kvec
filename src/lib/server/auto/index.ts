@@ -2,6 +2,7 @@ import { env } from "$env/dynamic/private";
 import type { CompleteItem, FindOption, ObjStoreItem, Store } from "$lib/types";
 import { BaseTextAdapter } from "../adapter";
 import { CloudflareCache, CloudflareKVObjStore } from "../cloudflare";
+import { CohereEncoder } from "../cohere";
 import { DEFAULT_K } from "../constants";
 import { MemoryObjStore, MemoryVecStore, MemoryCache, JustEncoder } from "../local";
 import { OpenAIEncoder } from "../openai";
@@ -14,7 +15,11 @@ export const AutoObjStore = typeof env.KV === "object" ? CloudflareKVObjStore : 
 export const AutoVecStore =
 	env.PINECONE_API_KEY && env.PINECONE_ENDPOINT ? PineconeVecStore : MemoryVecStore;
 
-export const AutoEncoder = env.OPENAI_API_KEY ? OpenAIEncoder : JustEncoder;
+export const AutoEncoder = env.OPENAI_API_KEY
+	? OpenAIEncoder
+	: env.COHERE_API_KEY
+	? CohereEncoder
+	: JustEncoder;
 
 // @ts-expect-error caches.default only exists on Cloudflare serverless environment
 export const AutoCache = globalThis?.caches?.default ? CloudflareCache : MemoryCache;
