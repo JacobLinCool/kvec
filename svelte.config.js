@@ -1,4 +1,5 @@
-import adapter from "@sveltejs/adapter-cloudflare";
+import adapter from "@sveltejs/adapter-auto";
+import adapter_node from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/kit/vite";
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -8,7 +9,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter(),
+		adapter: process.env.BUILD_NODE ? adapter_node() : adapter(),
 		alias: {
 			"$i18n/*": "./locales/*",
 		},

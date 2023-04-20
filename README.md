@@ -1,8 +1,12 @@
 # KVec
 
-Use Cloudflare KV or Upstash Redis with OpenAI/Cohere Text Embedding and Pinecone/Qdrant Vector Database.
+A modular semantic search stack.
 
-![icon](static/icon.png)
+It can be fully cloud-based with **Cloudflare KV** or **Upstash Redis**, **OpenAI** or **Cohere** Text Embedding, and **Pinecone** or **Qdrant Cloud** Vector Database.
+
+It can also be self-hosted with **CouchDB**, **Qdrant** on Docker.
+
+![KVec icon, created with leonardo.ai](static/icon.png)
 
 ## Features
 
@@ -35,6 +39,61 @@ And bind a KV namespace:
 > 1. Fork this repo.
 > 2. Create a new Cloudflare Pages project, connect to your forked repo, and setup the environment variables.
 > 3. Create a KV namespace and bind it to the project.
+
+### Docker
+
+To use KVec with Docker, you'll need to setup environment variables in the `.env` file.
+
+You may want something like this:
+
+```bash
+PORT="8080"
+ORIGIN="http://localhost:8080"
+APP_SECRET="my-kvec-secret"
+
+# Adapter
+HF_API_TOKEN="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Encoder
+COHERE_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# VecStore
+QDRANT_SERVER="http://qdrant:6333"
+QDRANT_COLLECTION="kvec"
+
+# ObjStore
+COUCHDB_URL="http://couchdb:5984"
+COUCHDB_DB="kvec"
+COUCHDB_USER="admin"
+COUCHDB_PASSWORD="password"
+```
+
+Then, you can run the following command to start:
+
+```bash
+docker compose up -d
+```
+
+To setup the Qdrant collection at the first time, you can run the following command:
+
+```bash
+curl -X 'PUT' 'http://localhost:6333/collections/kvec' -H 'accept: application/json' -H 'content-type: application/json' -d '
+{
+  "vectors": {
+        "size": 4096,
+        "distance": "Cosine"
+    }
+}'
+# The vector size for Cohere's embedding is 4096, if you are using OpenAI's embedding, you should change it to 1536.
+```
+
+To setup the CouchDB database at the first time, you can run the following command:
+
+```bash
+curl -X PUT http://admin:password@localhost:5984/kvec 
+```
+
+Now, you should be able to access the dashboard from `http://localhost:8080/`.
 
 ## GUI
 
@@ -241,6 +300,7 @@ Currently, the following implementations are available:
 - **ObjStore**
   - [x] `CloudflareKVObjStore`: Use [Cloudflare KV](https://www.cloudflare.com/products/workers-kv/) as the object store backend
   - [x] `UpstashRedisObjStore`: Use [Upstash Redis](https://upstash.com/) as the object store backend
+  - [x] `CouchDBObjStore`: Use [CouchDBObjStore](https://couchdb.apache.org/) as the object store backend
   - [x] `MemoryObjStore`: Only for local development
 - **VecStore**
   - [x] `PineconeVecStore`: Use [Pinecone](https://www.pinecone.io/) as the vector store backend

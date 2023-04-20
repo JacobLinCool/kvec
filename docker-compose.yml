@@ -1,0 +1,29 @@
+services:
+    kvec:
+        image: jacoblincool/kvec
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "${PORT}:${PORT}"
+        env_file:
+            - .env
+    qdrant:
+        image: qdrant/qdrant
+        ports:
+            - "6333:6333"
+        volumes:
+            - qdrant:/qdrant/storage
+    couchdb:
+        image: couchdb
+        ports:
+            - "5984:5984"
+        volumes:
+            - couchdb:/opt/couchdb/data
+            - ./extra/couchdb/local.ini:/opt/couchdb/etc/local.ini
+        env_file:
+            - .env
+
+volumes:
+    qdrant: {}
+    couchdb: {}
