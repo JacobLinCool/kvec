@@ -2,6 +2,9 @@ import { env } from "$env/dynamic/private";
 import type { VecStoreItem, VecStore, VecFindOption } from "$lib/types";
 import { DEFAULT_K, DEFAULT_THRESHOLD } from "../constants";
 
+const KEY = env.PINECONE_API_KEY;
+const ENDPOINT = env.PINECONE_ENDPOINT;
+
 export class PineconeVecStore implements VecStore {
 	async put(item: VecStoreItem): Promise<void> {
 		const { key, endpoint } = check_env();
@@ -95,13 +98,13 @@ export class PineconeVecStore implements VecStore {
 }
 
 function check_env(): { key: string; endpoint: string } {
-	if (!env.PINECONE_API_KEY) {
+	if (!KEY) {
 		throw new Error("Missing PINECONE_API_KEY");
 	}
 
-	if (!env.PINECONE_ENDPOINT) {
+	if (!ENDPOINT) {
 		throw new Error("Missing PINECONE_ENDPOINT");
 	}
 
-	return { key: env.PINECONE_API_KEY, endpoint: env.PINECONE_ENDPOINT };
+	return { key: KEY, endpoint: ENDPOINT };
 }

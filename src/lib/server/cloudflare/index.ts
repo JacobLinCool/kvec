@@ -1,6 +1,8 @@
 import { env } from "$env/dynamic/private";
 import type { ObjStoreItem, ObjStore, Cache } from "$lib/types";
 
+const KV = env.KV;
+
 export class CloudflareKVObjStore implements ObjStore {
 	async put(item: ObjStoreItem): Promise<void> {
 		await this.kv().put("item:" + item.id, JSON.stringify(item), { metadata: item.meta });
@@ -46,14 +48,14 @@ export class CloudflareKVObjStore implements ObjStore {
 	}
 
 	kv(): KVNamespace {
-		if (!env.KV) {
+		if (!KV) {
 			throw new Error("KV not initialized");
 		}
-		if (typeof env.KV !== "object") {
+		if (typeof KV !== "object") {
 			throw new Error("KV is not an object");
 		}
 
-		return env.KV as KVNamespace;
+		return KV as KVNamespace;
 	}
 }
 

@@ -92,7 +92,7 @@ export class AutoStore implements Store {
 
 console.log("Auto Selected Backends:");
 console.log("Adapter:", AutoAdapter.name);
+console.log("Encoder:", AutoEncoder.name);
 console.log("ObjStore:", AutoObjStore.name);
 console.log("VecStore:", AutoVecStore.name);
-console.log("Encoder:", AutoEncoder.name);
 console.log("Cache:", AutoCache.name);

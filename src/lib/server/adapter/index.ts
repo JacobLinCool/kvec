@@ -4,6 +4,9 @@ import { error } from "@sveltejs/kit";
 import { hash } from "../hash";
 import { time } from "../time";
 
+const HF_API_TOKEN = env.HF_API_TOKEN;
+const HF_IMGCAP_MODEL = env.HF_IMGCAP_MODEL;
+
 export class BaseTextAdapter implements Adapter {
 	async adapt(
 		item: RawItem | ObjStoreItem<{ text: string }>,
@@ -57,18 +60,18 @@ export class BaseTextAdapter implements Adapter {
 		}
 
 		if (typeof item.data.img === "string") {
-			if (!env.HF_API_TOKEN) {
+			if (!HF_API_TOKEN) {
 				throw error(500, "HF_API_TOKEN not set");
 			}
 
 			const url = new URL(item.data.img);
 
-			const model = env.HF_IMGCAP_MODEL || "nlpconnect/vit-gpt2-image-captioning";
+			const model = HF_IMGCAP_MODEL || "nlpconnect/vit-gpt2-image-captioning";
 
 			const img = url.protocol === "data:" ? data2blob(url) : await fetch(url);
 			const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
 				method: "POST",
-				headers: { Authorization: `Bearer ${env.HF_API_TOKEN}` },
+				headers: { Authorization: `Bearer ${HF_API_TOKEN}` },
 				body: img instanceof Response ? img.body : img,
 				// @ts-expect-error duplex is only available in node.js
 				duplex: img instanceof Response ? "half" : undefined,

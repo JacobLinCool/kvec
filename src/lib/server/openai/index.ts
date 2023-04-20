@@ -2,7 +2,8 @@ import { env } from "$env/dynamic/private";
 import type { AdaptedItem, Encoder } from "$lib/types";
 import type { CreateEmbeddingResponse } from "openai";
 
-const MODEL = "text-embedding-ada-002";
+const KEY = env.OPENAI_API_KEY;
+const MODEL = env.OPENAI_EMBED_MODEL || "text-embedding-ada-002";
 
 export class OpenAIEncoder implements Encoder {
 	async encode(item: AdaptedItem): Promise<number[]> {
@@ -10,7 +11,7 @@ export class OpenAIEncoder implements Encoder {
 			throw new Error("Unsupported feature type");
 		}
 
-		if (!env.OPENAI_API_KEY) {
+		if (!KEY) {
 			throw new Error("Missing OPENAI_API_KEY");
 		}
 
@@ -24,7 +25,7 @@ export async function embed(content: string): Promise<number[][]> {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+			Authorization: `Bearer ${KEY}`,
 		},
 		body: JSON.stringify({
 			model: MODEL,

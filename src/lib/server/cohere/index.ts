@@ -3,6 +3,7 @@ import type { AdaptedItem, Encoder } from "$lib/types";
 import type cohere from "cohere-ai";
 import { error } from "@sveltejs/kit";
 
+const KEY = env.COHERE_API_KEY;
 const MODEL = env.COHERE_EMBED_MODEL || "large";
 const TRUNCATE = env.COHERE_EMBED_TRUNCATE || "LEFT";
 
@@ -12,7 +13,7 @@ export class CohereEncoder implements Encoder {
 			throw new Error("Unsupported feature type");
 		}
 
-		if (!env.COHERE_API_KEY) {
+		if (!KEY) {
 			throw new Error("Missing COHERE_API_KEY");
 		}
 
@@ -27,7 +28,7 @@ export async function embed(content: string): Promise<number[]> {
 		headers: {
 			Accept: "application/json",
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${env.COHERE_API_KEY}`,
+			Authorization: `Bearer ${KEY}`,
 		},
 		body: JSON.stringify({
 			model: MODEL,
