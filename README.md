@@ -248,3 +248,6 @@ Currently, the following implementations are available:
 - **Cache**
   - [x] `CloudflareCache`: Use Cloudflare's Cache API
   - [x] `MemoryCache`: Only for local development, it just "don't cache anything"
+
+> The auto module will automatically load the correct implementation based on the environment variables.
+> See [src/lib/server/auto/index.ts](./src/lib/server/auto/index.ts)
