@@ -1,4 +1,4 @@
-FROM node:18 AS builder
+FROM node:19 AS builder
 
 WORKDIR /app
 RUN npm i -g pnpm
@@ -9,7 +9,7 @@ RUN BUILD_NODE=1 pnpm build
 RUN pnpm pkg delete scripts.prepare
 RUN pnpm prune --prod
 
-FROM node:18-alpine
+FROM node:19-alpine
 
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
