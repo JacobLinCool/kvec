@@ -4,6 +4,7 @@ import { BaseTextAdapter } from "../adapter";
 import { CloudflareCache, CloudflareKVObjStore } from "../cloudflare";
 import { CohereEncoder } from "../cohere";
 import { DEFAULT_K } from "../constants";
+import { CouchDBObjStore } from "../couchdb";
 import { MemoryObjStore, MemoryVecStore, MemoryCache, JustEncoder } from "../local";
 import { OpenAIEncoder } from "../openai";
 import { PineconeVecStore } from "../pinecone";
@@ -17,6 +18,8 @@ export const AutoObjStore =
 		? CloudflareKVObjStore
 		: env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
 		? UpstashRedisObjStore
+		: env.COUCHDB_URL && env.COUCHDB_DB && env.COUCHDB_USER && env.COUCHDB_PASSWORD
+		? CouchDBObjStore
 		: MemoryObjStore;
 
 export const AutoVecStore =
