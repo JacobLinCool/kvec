@@ -7,6 +7,7 @@ import { DEFAULT_K } from "../constants";
 import { MemoryObjStore, MemoryVecStore, MemoryCache, JustEncoder } from "../local";
 import { OpenAIEncoder } from "../openai";
 import { PineconeVecStore } from "../pinecone";
+import { QdrantVecStore } from "../qdrant";
 import { UpstashRedisObjStore } from "../upstash";
 
 export const AutoAdapter = BaseTextAdapter;
@@ -19,7 +20,11 @@ export const AutoObjStore =
 		: MemoryObjStore;
 
 export const AutoVecStore =
-	env.PINECONE_API_KEY && env.PINECONE_ENDPOINT ? PineconeVecStore : MemoryVecStore;
+	env.PINECONE_API_KEY && env.PINECONE_ENDPOINT
+		? PineconeVecStore
+		: env.QDRANT_SERVER && env.QDRANT_COLLECTION
+		? QdrantVecStore
+		: MemoryVecStore;
 
 export const AutoEncoder = env.OPENAI_API_KEY
 	? OpenAIEncoder
