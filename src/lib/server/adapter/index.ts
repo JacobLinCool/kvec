@@ -1,10 +1,26 @@
 import { env } from "$env/dynamic/private";
-import type { Adapter, RawItem, AdaptedItem } from "$lib/types";
+import type { Adapter, RawItem, AdaptedItem, ObjStoreItem } from "$lib/types";
 import { error } from "@sveltejs/kit";
 import { hash } from "../hash";
+import { time } from "../time";
 
 export class BaseTextAdapter implements Adapter {
-	async adapt(item: RawItem): Promise<AdaptedItem<{ text: string }>> {
+	async adapt(
+		item: RawItem | ObjStoreItem<{ text: string }>,
+	): Promise<AdaptedItem<{ text: string }>> {
+		if ("id" in item) {
+			console.log("re encode", item.id);
+
+			const new_item = {
+				id: item.id,
+				data: item.data,
+				meta: item.meta,
+				ft: item.data.text,
+			};
+
+			return new_item;
+		}
+
 		if (typeof item.data.text === "string") {
 			const new_item = {
 				id: `text:${await hash(item.data.text)}`,
@@ -95,7 +111,7 @@ function parse_webpage(html: string): { title: string; description: string } {
 }
 
 function data2blob(url: URL): Blob {
-	console.time("data2blob");
+	time.start("data2blob");
 	const [m, b] = url.href.split(",");
 
 	const bytes = atob(b);
@@ -109,7 +125,7 @@ function data2blob(url: URL): Blob {
 	const mime = m.split(":")[1].split(";")[0];
 
 	const blob = new Blob([buffer], { type: mime });
-	console.timeEnd("data2blob");
+	time.stop("data2blob");
 
 	return blob;
 }

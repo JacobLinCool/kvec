@@ -3,15 +3,7 @@ import type { ObjStoreItem, ObjStore, Cache } from "$lib/types";
 
 export class CloudflareKVObjStore implements ObjStore {
 	async put(item: ObjStoreItem): Promise<void> {
-		await this.kv().put(
-			"item:" + item.id,
-			JSON.stringify({
-				id: item.id,
-				data: item.data,
-				meta: item.meta,
-			}),
-			{ metadata: item.meta },
-		);
+		await this.kv().put("item:" + item.id, JSON.stringify(item), { metadata: item.meta });
 	}
 
 	async has(id: string): Promise<boolean> {

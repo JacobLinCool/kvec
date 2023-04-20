@@ -35,7 +35,7 @@
 		running = true;
 
 		try {
-			const url = new URL("/api/sys/stats", window.location.href);
+			const url = new URL("/api/item/list", window.location.href);
 			const res = await fetch(url.toString(), {
 				headers: {
 					Authorization: `Bearer ${token}`,

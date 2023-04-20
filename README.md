@@ -1,12 +1,12 @@
 # KVec
 
-Use Cloudflare KV with OpenAI Text Embedding and Pinecone Vector Database.
+Use Cloudflare KV or Upstash Redis with OpenAI/Cohere Text Embedding and Pinecone Vector Database.
 
 ![icon](static/icon.png)
 
 ## Features
 
-- Support for different item types: KVec supports text, web page, and image items out of the box, and you can easily extend it to support other types.
+- Support for different item types: KVec supports **text**, **web page**, and **image** items out of the box, and you can easily extend it to support other types.
 - Modular architecture: KVec allows you to easily change components like the encoder, object store, and vector store to fit your specific use case.
 - Authentication: KVec supports authentication using JWT tokens.
 - Dashboard GUI: KVec comes with a simple dashboard that allows you to manage your items and issue authentication tokens.
@@ -235,11 +235,12 @@ Currently, the following implementations are available:
 - **Adapter**
   - [x] `BaseTextAdapter`: Support text, web page, and image _(env `HF_API_TOKEN` required)_ items.
 - **Encoder**
-  - [x] `OpenAIEncoder`: Use OpenAI's `text-embedding-ada-002` to create embeddings
-  - [ ] `CohereEncoder`: Use Cohere as the embedding service
+  - [x] `OpenAIEncoder`: Use [OpenAI's `text-embedding-ada-002`](https://platform.openai.com/docs/guides/embeddings) to create embeddings
+  - [x] `CohereEncoder`: Use [Cohere](https://docs.cohere.ai/docs/embeddings) as the embedding service
   - [x] `JustEncoder`: Only for local development
 - **ObjStore**
-  - [x] `CloudflareKVObjStore`: Use Cloudflare's KV as the object store backend
+  - [x] `CloudflareKVObjStore`: Use [Cloudflare KV](https://www.cloudflare.com/products/workers-kv/) as the object store backend
+  - [x] `UpstashRedisObjStore`: Use [Upstash Redis](https://upstash.com/) as the object store backend
   - [x] `MemoryObjStore`: Only for local development
 - **VecStore**
   - [x] `PineconeVecStore`: Use [Pinecone](https://www.pinecone.io/) as the vector store backend

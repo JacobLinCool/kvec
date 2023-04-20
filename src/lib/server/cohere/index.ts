@@ -1,9 +1,10 @@
 import { env } from "$env/dynamic/private";
 import type { AdaptedItem, Encoder } from "$lib/types";
 import type cohere from "cohere-ai";
+import { error } from "@sveltejs/kit";
 
 const MODEL = env.COHERE_EMBED_MODEL || "large";
-const TRUNCATE = env.COHERE_EMBED_TRUNCATE || "NONE";
+const TRUNCATE = env.COHERE_EMBED_TRUNCATE || "LEFT";
 
 export class CohereEncoder implements Encoder {
 	async encode(item: AdaptedItem): Promise<number[]> {
@@ -21,7 +22,7 @@ export class CohereEncoder implements Encoder {
 }
 
 export async function embed(content: string): Promise<number[]> {
-	const res = await fetch("https://api.openai.com/v1/embeddings", {
+	const res = await fetch("https://api.cohere.ai/v1/embed", {
 		method: "POST",
 		headers: {
 			Accept: "application/json",
@@ -36,7 +37,13 @@ export async function embed(content: string): Promise<number[]> {
 	});
 
 	if (!res.ok) {
-		throw new Error(res.statusText);
+		throw error(
+			500,
+			await res
+				.text()
+				.then((t) => t || res.statusText)
+				.catch(() => res.statusText),
+		);
 	}
 
 	const result = await res.json<Awaited<ReturnType<(typeof cohere)["embed"]>>["body"]>();

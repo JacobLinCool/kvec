@@ -7,10 +7,16 @@ import { DEFAULT_K } from "../constants";
 import { MemoryObjStore, MemoryVecStore, MemoryCache, JustEncoder } from "../local";
 import { OpenAIEncoder } from "../openai";
 import { PineconeVecStore } from "../pinecone";
+import { UpstashRedisObjStore } from "../upstash";
 
 export const AutoAdapter = BaseTextAdapter;
 
-export const AutoObjStore = typeof env.KV === "object" ? CloudflareKVObjStore : MemoryObjStore;
+export const AutoObjStore =
+	typeof env.KV === "object"
+		? CloudflareKVObjStore
+		: env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
+		? UpstashRedisObjStore
+		: MemoryObjStore;
 
 export const AutoVecStore =
 	env.PINECONE_API_KEY && env.PINECONE_ENDPOINT ? PineconeVecStore : MemoryVecStore;
@@ -34,7 +40,18 @@ export class AutoStore implements Store {
 	}
 
 	async put(item: CompleteItem): Promise<void> {
-		await Promise.all([this.obj.put(item), this.vec.put(item)]);
+		await Promise.all([
+			this.obj.put({
+				id: item.id,
+				data: item.data,
+				meta: item.meta,
+			}),
+			this.vec.put({
+				id: item.id,
+				v: item.v,
+				meta: item.meta,
+			}),
+		]);
 	}
 
 	async has(id: string): Promise<boolean> {
