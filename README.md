@@ -1,6 +1,6 @@
 # KVec
 
-Use Cloudflare KV or Upstash Redis with OpenAI/Cohere Text Embedding and Pinecone Vector Database.
+Use Cloudflare KV or Upstash Redis with OpenAI/Cohere Text Embedding and Pinecone/Qdrant Vector Database.
 
 ![icon](static/icon.png)
 
@@ -244,6 +244,7 @@ Currently, the following implementations are available:
   - [x] `MemoryObjStore`: Only for local development
 - **VecStore**
   - [x] `PineconeVecStore`: Use [Pinecone](https://www.pinecone.io/) as the vector store backend
+  - [x] `QdrantVecStore`: Use [Qdrant](https://qdrant.tech/) as the vector store backend
   - [x] `MemoryVecStore`: Only for local development
 - **Cache**
   - [x] `CloudflareCache`: Use Cloudflare's Cache API
@@ -251,3 +252,4 @@ Currently, the following implementations are available:
 
 > The auto module will automatically load the correct implementation based on the environment variables.
 > See [src/lib/server/auto/index.ts](./src/lib/server/auto/index.ts)
+> You can also take a look at [the README of each module](./src/lib/server) to see how to configure them.
