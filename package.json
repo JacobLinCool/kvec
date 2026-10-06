@@ -57,7 +57,7 @@
 		"type-fest": "^3.8.0",
 		"typescript": "^5.0.4",
 		"vite": "^4.2.1",
-		"vitest": "^0.28.5",
+		"vitest": "^0.34.0",
 		"zod": "^3.21.4"
 	},
 	"lint-staged": {
